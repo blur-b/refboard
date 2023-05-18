@@ -1,0 +1,7 @@
+.navbar {
+    --bs-navbar-padding-y: 0;
+}
+
+.nav-link {
+    white-space: nowrap;
+}
