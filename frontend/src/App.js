@@ -11,6 +11,7 @@ function App() {
       <BrowserRouter>
         <Navbar />
         <Routes>
+          <Route path='/' />
           <Route path='/user/login' element={<Login />} />
           <Route path='/user/signup' element={<Signup />} />
         </Routes>
