@@ -28,7 +28,7 @@ export default class Navbar extends Component {
                 usernameError: "",
                 passwordError: "", 
             });
-            localStorage.setItem('token', res.token);
+            localStorage.setItem('token', res.data.token);
             window.location.href = '/';
         })
         .catch(err => {

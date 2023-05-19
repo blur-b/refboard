@@ -16,10 +16,10 @@ exports.signup = (req, res, next) => {
     if (email && !emailRegex.test(email)) {
         errors.email = "Invalid email address";
     }
-    if (!password) {
+    if (!password || password.trim() === 0) {
         errors.password = "Password is required";
     }
-    if (!password_confirmation) {
+    if (!password_confirmation || password_confirmation.trim() === 0) {
         errors.password_confirmation = "Password confirmation is required";
     }
     if (password !== password_confirmation) {
