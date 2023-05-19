@@ -8,31 +8,31 @@ const emailRegex = /^(?!.*\.{2})[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?
 exports.signup = (req, res, next) => {
     let { username, email, password, password_confirmation } = req.body;
 
-    let errors = [];
+    let errors = {};
     // validation
-    if (!username) {
-        errors.push({ username: "required" });
+    if (!username || username.trim() < 3) {
+        errors.username = "Username is required";
     }
     if (email && !emailRegex.test(email)) {
-        errors.push({ email: "invalid" });
+        errors.email = "Invalid email address";
     }
     if (!password) {
-        errors.push({ password: "required" });
+        errors.password = "Password is required";
     }
     if (!password_confirmation) {
-        errors.push({ password_confirmation: "required" });
+        errors.password_confirmation = "Password confirmation is required";
     }
     if (password !== password_confirmation) {
-        errors.push({ password: "mismatch" });
+        errors.password = "Password mismatch";
     }
-    if (errors.length > 0) {
-        return res.status(422).json({ errors: errors });
+    if (Object.keys(errors).length > 0) {
+        return res.status(422).json({ success: false, errors: errors });
     } 
     
     User.findOne({username: username})
     .then(user => {
         if (user) {
-            return res.status(400).json({ errors: [{ user: "username already exists" }] });
+            return res.status(400).json({ success: false, errors: { username: "Username already exists" } });
         }
         else {
             const user = new User({
@@ -52,14 +52,14 @@ exports.signup = (req, res, next) => {
                         })
                     })
                     .catch(err => {
-                        res.status(500).json({ errors: [{ error: err }] });
+                        res.status(500).json({ success: false, errors: { error: err } });
                     });
                 });
             });
         }
     })
     .catch(err => {
-        res.status(500).json({ errors: [{ error: err }] });
+        res.status(500).json({ success: false, errors: { error: err } });
     });
 }
 
@@ -70,20 +70,21 @@ exports.login = (req, res) => {
     .then(user => {
         if (!user) {
             return res.status(404).json({
-                errors: [{ user: "not found" }]
+                success: false, 
+                errors: { username: "User not found" }
             });
         }
         else {
             bcrypt.compare(password, user.password)
             .then(isMatch => {
                 if (!isMatch) {
-                    return res.status(400).json({ errors: [{ password: "incorrect" }] });
+                    return res.status(400).json({ success: false, errors: { password: "Incorrect password" } });
                 }
                 
                 let access_token = createJWT(user.username, user._id, 3600); // 1hr expiration
                 jwt.verify(access_token, process.env.TOKEN_SECRET, (err, decoded) => {
                     if (err) {
-                        res.status(500).json({ errors: err });
+                        res.status(500).json({ success: false, errors: err });
                     }
                     if (decoded) {
                         return res.status(200).json({
@@ -95,11 +96,11 @@ exports.login = (req, res) => {
                 });
             })
             .catch(err => {
-                res.status(500).json({ errors: err });
+                res.status(500).json({ success: false, errors: err });
             });
         }
     })
     .catch(err => {
-        res.status(500).json({ errors: err });
+        res.status(500).json({ success: false, errors: err });
     });
 }
